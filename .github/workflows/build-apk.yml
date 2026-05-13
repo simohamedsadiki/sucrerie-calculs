@@ -38,10 +38,12 @@ jobs:
         sed -i 's/android.minapi = 21/android.minapi = 21/' buildozer.spec
         sed -i 's/android.ndk = 19c/android.ndk = 23b/' buildozer.spec
         sed -i 's/android.sdk = 20/android.sdk = 30/' buildozer.spec
+        sed -i 's/android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
 
     - name: Build APK
       run: |
-        buildozer android debug
+        # Accepter automatiquement les licences Android
+        echo "y" | buildozer android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
