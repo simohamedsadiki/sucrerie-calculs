@@ -1,0 +1,49 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+        python -m pip install --upgrade pip
+        python -m pip install setuptools==59.5.0
+        python -m pip install cython==0.29.37
+        python -m pip install buildozer
+
+    - name: Create buildozer.spec
+      run: |
+        buildozer init
+        sed -i 's/title = My Application/title = Sucrerie COSUMAR/' buildozer.spec
+        sed -i 's/package.name = myapp/package.name = sucrerieapp/' buildozer.spec
+        sed -i 's/package.domain = org.example/package.domain = org.cosumar/' buildozer.spec
+        sed -i 's/requirements = python3,kivy/requirements = python3,kivy==2.1.0/' buildozer.spec
+        sed -i 's/android.api = 27/android.api = 30/' buildozer.spec
+        sed -i 's/android.minapi = 21/android.minapi = 21/' buildozer.spec
+        sed -i 's/android.ndk = 19c/android.ndk = 23b/' buildozer.spec
+        sed -i 's/android.sdk = 20/android.sdk = 30/' buildozer.spec
+
+    - name: Build APK
+      run: |
+        buildozer android debug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: sucrerie-apk
+        path: bin/*.apk
